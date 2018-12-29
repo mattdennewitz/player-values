@@ -80,10 +80,12 @@ def main():
         'eligibility': cfg['eligibility'],
         'lineup': cfg['positions'],
         'budget': cfg['budget'],
+        'total_draftable': cfg['total_draftable'],
     }
 
     results = {
         'batting': optimize(context, 'b'),
+        'pitching': optimize(context, 'p'),
     }
 
     return results
@@ -140,13 +142,17 @@ def optimize(context: dict, pool_type: str):
         # check for convergence
         for prior in outcomes:
             if prior == context['rates']['devs']:
+                print(context[pool_type]['players'][0].keys())
+
                 output = [
                     pick(player, 'name', 'pos_mv', 'pos_eligible', 'dollars',
-                         'components.b_pa', 'z_value', 'fvarz')
+                         'z_value', 'fvarz')
                     for player in context[pool_type]['players']
                 ]
 
+                print('repls')
                 pprint(context['replacement_levels'])
+                print('- averages')
                 pprint(context['rates']['avgs'])
 
                 json.dump(output, open(f'final-{pool_type}.json', 'w'))

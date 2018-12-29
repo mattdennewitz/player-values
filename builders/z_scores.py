@@ -27,11 +27,9 @@ def apply_z_scores(context, pool_type):
             if lg_devs[component_key] == 0.:
                 continue
 
-            flipper = 1. if component not in const.BAD_STATS else -1.
-
             value = (
                 (player['components'][component_key] - lg_avgs[component_key])
-                / lg_devs[component_key]) * flipper
+                / lg_devs[component_key])
             player['z_' + component_key] = value  # mark component z-score
             player['z_value'] += value  # add to total z-value
 

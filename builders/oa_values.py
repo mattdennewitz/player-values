@@ -5,7 +5,7 @@ Calculates and applies over-average values for given players
 import const
 
 
-def apply_oa_values(context, pool_type):
+def apply_oa_values(context: dict, pool_type: str):
     """OA value application
     """
 
@@ -19,8 +19,12 @@ def apply_oa_values(context, pool_type):
             if pool_type == 'b' else player['components']['p_ip'])
 
         for stat in rate_stats:
-            # calculate over-average numbers for rate stats
             oa_key = f'{stat}_oa'
+
+            if oa_key in player['components']:
+                continue  # ignore above repl players
+
+            # calculate over-average numbers for rate stats
             if stat in const.BAD_STATS:
                 value = avgs[stat] - player['components'][stat]
             else:
