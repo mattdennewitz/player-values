@@ -9,7 +9,7 @@ import const
 import statbuilders
 
 
-def calculate_league_rates(player_pool, batting_stats, pitching_stats):
+def calculate_league_rates(context, pool_type):
     """Calculates league averages, deviations, and expected rates
     """
 
@@ -18,10 +18,14 @@ def calculate_league_rates(player_pool, batting_stats, pitching_stats):
     avgs = {}
     devs = {}
 
-    for player in player_pool:
-        components = (const.BATTING_COMPONENTS if player['player_type'] == 'b'
-                      else const.PITCHING_COMPONENTS)
+    components = context[pool_type]['components']
+    rate_stats = context[pool_type]['rates']
 
+    # player pool is limited to only drafted players
+    player_pool = context[pool_type]['players']
+    player_pool = player_pool[:context[pool_type]['n_draftable']]
+
+    for player in player_pool:
         for stat in components:
             value = player['components'][stat]
             stats[stat].append(value)
@@ -31,7 +35,7 @@ def calculate_league_rates(player_pool, batting_stats, pitching_stats):
         avgs[stat] = statistics.mean(stats[stat])
         devs[stat] = statistics.stdev(stats[stat])
 
-    rates = {
+    avgs.update({
         'b_avg':
         statbuilders.build_avg(totals['b_h'], totals['b_ab']),
         'b_obp':
@@ -47,6 +51,35 @@ def calculate_league_rates(player_pool, batting_stats, pitching_stats):
         statbuilders.build_era(totals['p_ip'], totals['p_er']),
         'p_whip':
         statbuilders.build_whip(totals['p_ip'], totals['p_bb'], totals['p_h']),
+    })
+
+    # iterate again through player pool to calculate "over-average" stats
+    # for all rate stat categories (era, whip, avg, ...)
+    for player in player_pool:
+        rate_weight = (
+            player['components']['b_ab']  # determine weight for rate stats
+            if pool_type == 'b' else player['components']['p_ip'])
+
+        for stat in rate_stats:
+            # calculate over-average numbers for rate stats
+            oa_key = f'{stat}_oa'
+            if stat in const.BAD_STATS:
+                value = avgs[stat] - player['components'][stat]
+            else:
+                value = player['components'][stat] - avgs[stat]
+            value *= rate_weight  # weighted over-average value
+            stats[oa_key].append(value)
+            player['components'][oa_key] = value
+
+    for stat in rate_stats:
+        oa_key = f'{stat}_oa'
+        avgs[oa_key] = statistics.mean(stats[oa_key])
+        devs[oa_key] = statistics.stdev(stats[oa_key])
+
+    context['rates'] = {
+        'avgs': avgs,
+        'devs': devs,
+        'totals': totals,
     }
 
-    return (avgs, devs, rates)
+    return context

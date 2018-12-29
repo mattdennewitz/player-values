@@ -2,7 +2,91 @@
 Schema models
 """
 
-from marshmallow import Schema, fields, INCLUDE, post_dump, pre_dump
+from marshmallow import Schema, fields, INCLUDE, post_dump, pre_dump, post_load
+
+import const
+
+
+class ConfigPositions(Schema):
+    c = fields.Int(default=0)
+    b1 = fields.Int(default=0)
+    b2 = fields.Int(default=0)
+    ss = fields.Int(default=0)
+    b3 = fields.Int(default=0)
+    lf = fields.Int(default=0)
+    cf = fields.Int(default=0)
+    rf = fields.Int(default=0)
+    of = fields.Int(default=0)
+    mi = fields.Int(default=0)
+    ci = fields.Int(default=0)
+    if_ = fields.Int(default=0)
+    dh = fields.Int(default=0)
+    sp = fields.Int(default=0)
+    rp = fields.Int(default=0)
+    p = fields.Int(default=0)
+
+
+class ConfigEligibility(Schema):
+    b = fields.Int(default=10)
+    sp = fields.Int(default=5)
+    rp = fields.Int(default=5)
+
+
+class ConfigSplit(Schema):
+    b = fields.Float(default=.7)
+    p = fields.Float(default=.3)
+
+
+class Config(Schema):
+    """League configuration
+    """
+
+    budget = fields.Float(default=260.0)
+    split = fields.Nested(ConfigSplit)
+    teams = fields.Int(default=12)
+    draftable_p = fields.Int(default=0)
+    draftable_b = fields.Int(default=0)
+    total_draftable = fields.Int(default=0)
+    positions = fields.Nested(ConfigPositions)
+    eligibility = fields.Nested(ConfigEligibility)
+    batting_stats = fields.List(fields.Str)
+    pitching_stats = fields.List(fields.Str)
+
+    @post_load
+    def denorm_positions(self, data):
+        data['lg_pos'] = [
+            pos for pos in data['positions'] if data['positions'][pos] > 0
+        ]
+
+        data['batting_pos'] = {
+            pos: count
+            for (pos, count) in data['positions'].items()
+            if pos not in const.POS_P
+        }
+
+        data['pitching_pos'] = {
+            pos: count
+            for (pos, count) in data['positions'].items() if pos in const.POS_P
+        }
+
+        data['batting_budget'] = data['budget'] * data['split']['b']
+        data['pitching_budget'] = data['budget'] * data['split']['p']
+
+        return data
+
+    @post_load
+    def set_draftable_count(self, data):
+        pos = data['positions']
+
+        data['draftable_b'] = (
+            pos['c'] + pos['b1'] + pos['b2'] + pos['b3'] + pos['ss'] +
+            pos['lf'] + pos['cf'] + pos['rf'] + pos['of'] + pos['mi'] +
+            pos['ci'] + pos['if_'] + pos['dh']) * data['teams']
+        data['draftable_p'] = (
+            pos['sp'] + pos['rp'] + pos['p']) * data['teams']
+        data['total_draftable'] = data['draftable_b'] + data['draftable_p']
+
+        return data
 
 
 class Components(Schema):
@@ -121,15 +205,3 @@ class Player(Schema):
     player_id = fields.Str(attribute='player_id')
     components = fields.Nested(Components)
     positions = fields.Nested(Positions)
-
-
-# schema = Batter()
-# out = schema.dump({
-#     'name': 'Mike trout',
-#     'player_type': 'b',
-#     'components': {
-#         'M': 'at',
-#         'B_AB': '-20',
-#     }
-# })
-# print(out)

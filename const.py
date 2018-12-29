@@ -6,13 +6,16 @@ LEAGUE_BUDGET = TEAM_BUDGET * TEAMS  # 3120
 LEAGUE_BATTING_BUDGET = LEAGUE_BUDGET * .7  # 2090.4
 LEAGUE_PITCHING_BUDGET = LEAGUE_BUDGET * .3  # 1029.6
 
+# stats that count *against* a player
 BAD_STATS = frozenset([  # lower == better
     'b_so',
+    'b_cs',
     'p_era',
     'p_whip',
     'p_hra',
 ])
 
+# all recognized batting components
 BATTING_COMPONENTS = frozenset([
     'b_pa',
     'b_ab',
@@ -33,12 +36,14 @@ BATTING_COMPONENTS = frozenset([
     'b_3b',
 ])
 
+# all recognized batting rate stats
 BATTING_RATES = frozenset([
     'b_avg',
     'b_obp',
     'b_slg',
 ])
 
+# all recognized pitching components
 PITCHING_COMPONENTS = frozenset([
     'p_ip',
     'p_g',
@@ -65,96 +70,11 @@ PITCHING_COMPONENTS = frozenset([
     'p_hra',
 ])
 
+# all recognized pitching rate stats
 PITCHING_RATES = frozenset([
     'p_era',
     'p_whip',
 ])
-
-BATTING_STATS = frozenset([
-    'b_avg',
-    'b_obp',
-    'b_slg',
-    'b_hr',
-    'b_rbi',
-    'b_so',
-    'b_r',
-    'b_sb',
-])
-
-PITCHING_STATS = frozenset([
-    'p_era',
-    'p_whip',
-    'p_so',
-    'p_w',
-    'p_qs',
-    'p_sv',
-    'p_hld',
-    'p_hra',
-])
-
-# positions used by a certain league
-POSITIONS = {
-    'c': 1,
-    'b1': 1,
-    'b2': 1,
-    'ss': 1,
-    'b3': 1,
-    'lf': 0,
-    'cf': 0,
-    'rf': 0,
-    'of': 3,
-    'dh': 1,
-    'sp': 5,
-    'rp': 5,
-    'mi': 0,
-    'ci': 0,
-    'if_': 0,
-    'p': 0,
-}
-
-# a league's positional eligibility requirements
-POS_ELIGIBILITY = {
-    'c': 10,
-    'b1': 10,
-    'b2': 10,
-    'ss': 10,
-    'b3': 10,
-    'lf': 10,
-    'cf': 10,
-    'rf': 10,
-    'of': 10,
-    'mi': 10,
-    'ci': 10,
-    'if_': 10,
-    'sp': 5,
-    'rp': 5,
-    'p': 0,
-    'dh': 0,
-}
-
-# league players per batting position
-BATTING_POS = collections.OrderedDict((
-    ('c', 1 * TEAMS),
-    ('ss', 1 * TEAMS),
-    ('b2', 1 * TEAMS),
-    ('b3', 1 * TEAMS),
-    ('cf', 0 * TEAMS),
-    ('lf', 0 * TEAMS),
-    ('rf', 0 * TEAMS),
-    ('of', 3 * TEAMS),
-    ('b1', 1 * TEAMS),
-    ('mi', 0 * TEAMS),
-    ('ci', 0 * TEAMS),
-    ('if_', 0 * TEAMS),
-    ('dh', 1 * TEAMS),
-))
-
-# league players per pitching position
-PITCHING_POS = collections.OrderedDict((
-    ('sp', 5 * TEAMS),
-    ('rp', 6 * TEAMS),
-    ('P', 0 * TEAMS),
-))
 
 # position scarcity
 POS_PRIORITY = {
@@ -179,7 +99,7 @@ POS_PRIORITY = {
     'p': 15,
 }
 
-DRAFTABLE_PLAYERS = sum(BATTING_POS.values()) + sum(
-    PITCHING_POS.values())  # total number of players drafted
-
-PLAYERS_PER_TEAM = DRAFTABLE_PLAYERS / TEAMS
+POS_CORE = ('c', 'ss', 'b2', 'b3', 'b1', 'sp', 'rp')
+POS_OF = ('cf', 'lf', 'rf', 'of')
+POS_FLEX = ('mi', 'ci', 'if_', 'p', 'dh')
+POS_P = ('sp', 'rp', 'p')

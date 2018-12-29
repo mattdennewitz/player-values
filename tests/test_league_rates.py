@@ -34,8 +34,7 @@ def test_calc_league_rates():
     })
 
     avgs, devs, rates = league_rates.calculate_league_rates(
-        [player_trout, player_stanton], const.BATTING_COMPONENTS,
-        const.PITCHING_COMPONENTS)
+        [player_trout, player_stanton], const.BATTING_COMPONENTS)
 
     assert avgs['b_hr'] == 29.5
     assert avgs['b_h'] == 15.

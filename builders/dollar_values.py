@@ -5,24 +5,19 @@ Builds dollar values
 import const
 
 
-def apply_dollar_values(player_pool):
+def apply_dollar_values(context: dict, pool_type: str):
     """Sets dollar values for pool of players based on % contribution
     """
 
-    batting_value = sum([
-        player['fvarz'] for player in player_pool
-        if player['fvarz'] > 0 and player['player_type'] == 'b'
-    ])
-    pitching_value = sum([
-        player['fvarz'] for player in player_pool
-        if player['fvarz'] > 0 and player['player_type'] == 'p'
-    ])
+    player_pool = context[pool_type]['players']
+    n_draftable = context[pool_type]['n_draftable']
 
-    batting_var = const.LEAGUE_BATTING_BUDGET / batting_value
-    pitching_var = const.LEAGUE_PITCHING_BUDGET / pitching_value
+    marginal_money = (
+        context[pool_type]['split'] * const.LEAGUE_BUDGET - (1 * n_draftable))
+    total_value = sum([p['fvarz'] for p in player_pool[:n_draftable]])
+    scale_factor = marginal_money / total_value
 
     for player in player_pool:
-        mult = batting_var if player['player_type'] == 'b' else pitching_var
-        player['dollars'] = player['fvarz'] * mult
+        player['dollars'] = player['fvarz'] * scale_factor + 1
 
-    return player_pool
+    return context

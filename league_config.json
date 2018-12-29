@@ -1,0 +1,45 @@
+{
+    "teams": 12,
+    "positions": {
+        "c": 1,
+        "b1": 1,
+        "b2": 1,
+        "b3": 1,
+        "ss": 1,
+        "lf": 0,
+        "cf": 0,
+        "rf": 0,
+        "of": 3,
+        "sp": 5,
+        "rp": 5,
+        "mi": 0,
+        "ci": 0,
+        "if_": 0,
+        "p": 0,
+        "dh": 1
+    },
+    "eligibility": {
+        "b": 10,
+        "rp": 5,
+        "sp": 5
+    },
+    "batting_stats": [
+        "b_avg",
+        "b_rbi",
+        "b_r",
+        "b_sb",
+        "b_hr"
+    ],
+    "pitching_stats": [
+        "p_w",
+        "p_sv",
+        "p_era",
+        "p_whip",
+        "p_so"
+    ],
+    "split": {
+        "b": 0.7,
+        "p": 0.3
+    },
+    "budget": 260.0
+}

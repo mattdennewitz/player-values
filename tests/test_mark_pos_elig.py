@@ -9,7 +9,7 @@ import const
 from models import Player
 
 
-def test_position_prioritization():
+def test_position_prioritization(app_config):
     """Ensures correct position insertion order
     """
 
@@ -26,15 +26,15 @@ def test_position_prioritization():
         'components': {},
     })
 
-    player_pool = mark_positional_eligibility([player], const.POS_ELIGIBILITY,
-                                              const.POSITIONS)
+    player_pool = mark_positional_eligibility([player], app_config['lg_pos'],
+                                              app_config['eligibility'])
     player = player_pool[0]
 
     assert player['pos_mv'] == 'ss'
     assert player['pos_eligible'] == ['ss', 'b3', 'sp']
 
 
-def test_all_batters_get_dh():
+def test_all_batters_get_dh(app_config):
     """Ensures all batters receive DH (U) eligibility
     """
 
@@ -43,21 +43,23 @@ def test_all_batters_get_dh():
     player_pool = [
         schema.dump({
             'player_type': 'b',
-            'positions': {},
+            'positions': {
+                '1B': 50,
+            },
             'player_id': i,
             'components': {},
         }) for i in range(20)
     ]
 
     player_pool = mark_positional_eligibility(
-        player_pool, const.POS_ELIGIBILITY, const.POSITIONS)
+        player_pool, app_config['lg_pos'], app_config['eligibility'])
 
     for player in player_pool:
-        assert player['pos_mv'] == 'dh'
-        assert len(player['pos_eligible']) == 1
+        assert player['pos_mv'] == 'b1'
+        assert 'dh' in player['pos_flex']
 
 
-def test_pitchers_coerced_to_rp_if_empty():
+def test_pitchers_coerced_to_rp_if_empty(app_config):
     """Ensures pitchers are marked as RP if no games started are projected
     """
 
@@ -70,14 +72,14 @@ def test_pitchers_coerced_to_rp_if_empty():
         'components': {},  # implicitly no games started
     })
 
-    player_pool = mark_positional_eligibility([player], const.POS_ELIGIBILITY,
-                                              const.POSITIONS)
+    player_pool = mark_positional_eligibility([player], app_config['lg_pos'],
+                                              app_config['eligibility'])
     player = player_pool[0]
     assert player['pos_mv'] == 'rp'
     assert 'dh' not in player['pos_eligible']  # dh for batters only
 
 
-def test_pitchers_set_to_sp():
+def test_pitchers_set_to_sp(app_config):
     """Pitchers with GS projected should be marked as SP
     """
 
@@ -92,7 +94,7 @@ def test_pitchers_set_to_sp():
         },
     })
 
-    player_pool = mark_positional_eligibility([player], const.POS_ELIGIBILITY,
-                                              const.POSITIONS)
+    player_pool = mark_positional_eligibility([player], app_config['lg_pos'],
+                                              app_config['eligibility'])
     player = player_pool[0]
     assert player['pos_mv'] == 'sp'
